@@ -23,28 +23,28 @@ void UAuroraWidgetController::BindCallbacksToDependencies() {
 
 }
 
-UAuroraAttributeSet* UAuroraWidgetController::GetAuraAS() {
+UAuroraAttributeSet* UAuroraWidgetController::GetAuroraAS() {
 	if (AuroraAttributeSet == nullptr) {
 		AuroraAttributeSet = Cast<UAuroraAttributeSet>(AttributeSet);
 	}
 	return AuroraAttributeSet;
 }
 
-AAuroraPlayerController* UAuroraWidgetController::GetAuraPC() {
+AAuroraPlayerController* UAuroraWidgetController::GetAuroraPC() {
 	if (AuroraPlayerController == nullptr) {
 		AuroraPlayerController = Cast<AAuroraPlayerController>(GetOuter());
 	}
 	return Cast<AAuroraPlayerController>(PlayerController);
 }
 
-AAuroraPlayerState* UAuroraWidgetController::GetAuraPS() {
+AAuroraPlayerState* UAuroraWidgetController::GetAuroraPS() {
 	if (AuroraPlayerState == nullptr) {
 		AuroraPlayerState = Cast<AAuroraPlayerState>(GetOuter());
 	}
 	return Cast<AAuroraPlayerState>(AuroraPlayerState);
 }
 
-UAuroraAbilitySystemComponent* UAuroraWidgetController::GetAuraASC() {
+UAuroraAbilitySystemComponent* UAuroraWidgetController::GetAuroraASC() {
 	if (AbilitySystemComponent == nullptr) {
 		AbilitySystemComponent = Cast<UAuroraAbilitySystemComponent>(GetOuter());
 	}

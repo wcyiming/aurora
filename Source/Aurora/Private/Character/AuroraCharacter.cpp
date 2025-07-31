@@ -7,6 +7,9 @@
 #include "Player/AuroraPlayerController.h"
 #include "UI/HUD/AuroraHUD.h"
 #include "AbilitySystem/AuroraAbilitySystemComponent.h"
+#include "AbilitySystem/AuroraAttributeSet.h"
+#include "Net/UnrealNetwork.h"
+
 
 AAuroraCharacter::AAuroraCharacter()
 {
@@ -34,10 +37,20 @@ void AAuroraCharacter::OnRep_PlayerState() {
 	InitAbilityActorInfo();
 }
 
+int32 AAuroraCharacter::GetPlayerLevel() {
+	AAuroraPlayerState* AuroraPlayerState = GetPlayerState<AAuroraPlayerState>();
+	if (!AuroraPlayerState) {
+		return 0;
+	}
+	return AuroraPlayerState->GetPlayerLevel();
+}
+
 void AAuroraCharacter::InitAbilityActorInfo() {
 	AAuroraPlayerState* AuroraPlayerState = GetPlayerState<AAuroraPlayerState>();
 	check(AuroraPlayerState);
 	AuroraPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AuroraPlayerState, this);
+	Cast<UAuroraAbilitySystemComponent>(AuroraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
+
 	AbilitySystemComponent = AuroraPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AuroraPlayerState->GetAttributeSet();
 
@@ -46,4 +59,6 @@ void AAuroraCharacter::InitAbilityActorInfo() {
 			AuroraHUD->InitOverlay(AuroraPlayerController, AuroraPlayerState, AbilitySystemComponent, AttributeSet);
 		}
 	}
+
+	InitializeDefaultAttributes();
 }

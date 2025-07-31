@@ -29,8 +29,18 @@ void AAuroraEnemyBase::UnhighlightActor() {
 	Weapon->SetRenderCustomDepth(false);
 }
 
+int32 AAuroraEnemyBase::GetPlayerLevel() {
+	return Level;
+}
+
 void AAuroraEnemyBase::BeginPlay() {
 	Super::BeginPlay();
 
+	InitAbilityActorInfo();
+}
+
+void AAuroraEnemyBase::InitAbilityActorInfo() {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	Cast<UAuroraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
+
 }
