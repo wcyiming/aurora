@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "GameplayTagContainer.h"
+
 #include "CombatInterface.generated.h"
 
 // This class does not need to be modified.
@@ -24,4 +26,6 @@ class AURORA_API ICombatInterface
 public:
 
 	virtual int32 GetPlayerLevel();
+
+	virtual FVector GetCombatSocketLocation(const FGameplayTag& MontageTag);
 };

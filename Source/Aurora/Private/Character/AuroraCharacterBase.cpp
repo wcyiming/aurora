@@ -3,6 +3,7 @@
 
 #include "Character/AuroraCharacterBase.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/AuroraAbilitySystemComponent.h"
 
 // Sets default values
 AAuroraCharacterBase::AAuroraCharacterBase()
@@ -37,6 +38,13 @@ void AAuroraCharacterBase::InitializeDefaultAttributes() const {
 	ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
 }
 
+void AAuroraCharacterBase::AddCharacterAbilities() {
+	UAuroraAbilitySystemComponent* AuraASC = CastChecked<UAuroraAbilitySystemComponent>(AbilitySystemComponent);
+	if (!HasAuthority()) return;
+
+	AuraASC->AddCharacterAbilities(StartupAbilities);
+}
+
 UAbilitySystemComponent* AAuroraCharacterBase::GetAbilitySystemComponent() const {
 	return AbilitySystemComponent;
 }
@@ -46,6 +54,13 @@ void AAuroraCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+FVector AAuroraCharacterBase::GetCombatSocketLocation(const FGameplayTag& MontageTag) {
+	if (Weapon) {
+		return Weapon->GetSocketLocation(WeaponTipSocketName);
+	}
+	return FVector::ZeroVector;
 }
 
 

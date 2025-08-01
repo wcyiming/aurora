@@ -27,7 +27,7 @@ void AAuroraCharacter::PossessedBy(AController* NewControllern) {
 	Super::PossessedBy(NewControllern);
 
 	InitAbilityActorInfo();
-
+	AddCharacterAbilities();
 }
 
 
