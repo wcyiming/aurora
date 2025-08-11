@@ -7,6 +7,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/Character.h"
 #include "AuroraGameplayTags.h"
+#include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/AuroraPlayerController.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -84,10 +87,46 @@ void UAuroraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	SetEffectProperties(Data, Props);
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute()) {
+		UE_LOG(LogTemp, Log, TEXT("PostGameplayEffectExecute: Health changed from %f to %f"), GetHealth(), Data.EvaluatedData.Magnitude);
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
 	}
 	if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
+	}
+
+	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute()) {
+		const float LocalIncomingDamage = GetIncomingDamage();
+		SetIncomingDamage(0.f);
+		if (LocalIncomingDamage > 0.f) {
+			const float NewHealth = GetHealth() - LocalIncomingDamage;
+			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
+
+			const bool bFatal = NewHealth <= 0.f;
+
+			if (bFatal) {
+				ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor);
+				if (CombatInterface) {
+					CombatInterface->Die();
+				}
+			} else{
+				FGameplayTagContainer TagContainer;
+				TagContainer.AddTag(FAuroraGameplayTags::Get().Effects_HitReact);
+				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+			}
+
+			ShowFloatingText(Props, LocalIncomingDamage);
+		}
+	}
+	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute()) {
+		HandleIncomingXP(Props);
+	}
+}
+
+void UAuroraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const {
+	if (Props.SourceCharacter != Props.TargetCharacter) {
+		if (AAuroraPlayerController* PC = Cast<AAuroraPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0))) {
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter);
+		}
 	}
 }
 
@@ -114,6 +153,13 @@ void UAuroraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackDa
 		Props.TargetCharacter = Cast<ACharacter>(Props.TargetAvatarActor);
 		Props.TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Props.TargetAvatarActor);
 	}
+}
+
+void UAuroraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props) {
+
+}
+
+void UAuroraAttributeSet::HandleIncomingXP(const FEffectProperties& Props) {
 }
 
 

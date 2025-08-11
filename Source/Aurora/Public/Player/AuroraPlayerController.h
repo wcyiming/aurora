@@ -17,6 +17,7 @@ class UAuroraInputConfig;
 class UAuroraAbilitySystemComponent;
 class USplineComponent;
 class UNiagaraSystem;
+class UDamageTextComponent;
 
 enum class ETargetingStatus : uint8 {
 	TargetingEnemy,
@@ -35,6 +36,9 @@ public:
 	AAuroraPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
 
+	UFUNCTION(Client, Reliable)
+	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter);
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -49,6 +53,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> MoveAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> ShiftAction;
 
 	void ShiftPressed() { bShiftKeyDown = true; };
 	void ShiftReleased() { bShiftKeyDown = false; };
@@ -96,5 +103,7 @@ private:
 
 	void AutoRun();
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 
 };

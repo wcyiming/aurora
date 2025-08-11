@@ -10,6 +10,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AuroraGameplayTags.h"
 
+#include "GameFramework/Character.h"
+#include "UI/Widget/DamageTextComponent.h"
+
 #include "Components/SplineComponent.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
@@ -26,6 +29,16 @@ void AAuroraPlayerController::PlayerTick(float DeltaTime) {
 
 	CursorTrace();
 	AutoRun();
+}
+
+void AAuroraPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter) {
+	if (IsValid(TargetCharacter) && DamageTextComponentClass) {
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageText->RegisterComponent();
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(DamageAmount);
+	}
 }
 
 void AAuroraPlayerController::CursorTrace() {
@@ -198,6 +211,8 @@ void AAuroraPlayerController::SetupInputComponent()
 	UAuroraInputComponent* AuroraInputComponent = CastChecked<UAuroraInputComponent>(InputComponent);
 
 	AuroraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuroraPlayerController::Move);
+	AuroraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuroraPlayerController::ShiftPressed);
+	AuroraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuroraPlayerController::ShiftReleased);
 		
 	AuroraInputComponent->BindAbilityActions(InputConfig, this,
 		&AAuroraPlayerController::AbilityInputTagPresssed,

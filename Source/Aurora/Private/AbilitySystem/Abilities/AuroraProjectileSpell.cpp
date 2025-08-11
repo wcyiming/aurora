@@ -6,11 +6,10 @@
 #include "AbilitySystemComponent.h"
 #include "Actor/AuroraProjectile.h"
 #include "Interaction/CombatInterface.h"
+#include "AuroraGameplayTags.h"
 
 void UAuroraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	FGameplayTag MyTag;
-	SpawnProjectile(FVector::ZeroVector, MyTag, true, 0.f);
 }
 
 void UAuroraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag, bool bOverridePitch, float PitchOverride) {
@@ -30,7 +29,7 @@ void UAuroraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLoca
 
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SocketLocation);
-	//SpawnTransform.SetRotation(Rotation.Quaternion());
+	SpawnTransform.SetRotation(Rotation.Quaternion());
 
 	AAuroraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuroraProjectile>(
 		ProjectileClass,
@@ -39,6 +38,14 @@ void UAuroraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLoca
 		Cast<APawn>(GetOwningActorFromActorInfo()),
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
+	const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
+	const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), SourceASC->MakeEffectContext());
+	Projectile->DamageEffectSpecHandle = SpecHandle;
+
+	const FAuroraGameplayTags GameplayTags = FAuroraGameplayTags::Get();
+	const float ScaledDamage = Damage.GetValueAtLevel(GetAbilityLevel());
+
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle, GameplayTags.Damage, ScaledDamage);
 
 	Projectile->FinishSpawning(SpawnTransform);
 
