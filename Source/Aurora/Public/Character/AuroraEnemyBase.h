@@ -10,6 +10,8 @@
 #include "AuroraEnemyBase.generated.h"
 
 class UWidgetComponent;
+class UBehaviorTree;
+class AAuroraAIController;
 
 /**
  * 
@@ -21,6 +23,7 @@ class AURORA_API AAuroraEnemyBase : public AAuroraCharacterBase, public IEnemyIn
 	
 public:
 	AAuroraEnemyBase();
+	virtual void PossessedBy(AController* NewController) override;
 
 	// Enemy Interface
 	virtual void HighlightActor() override;
@@ -40,6 +43,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float LifeSpan = 5.f;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+	UPROPERTY()
+	TObjectPtr<AAuroraAIController> AuroraAIController;
 
 protected:
 

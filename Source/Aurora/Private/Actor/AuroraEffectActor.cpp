@@ -51,7 +51,7 @@ void AAuroraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UG
 		ActiveEffectHandles.Add(ActiveEffectHandle, TargetASC);
 	}
 
-	if (!bIsInfinite) {
+	if (bDestroyOnEffectApplication && !bIsInfinite) {
 		Destroy();
 	}
 }

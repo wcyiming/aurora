@@ -10,6 +10,7 @@
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuroraPlayerController.h"
+#include "AbilitySystem/AuroraAbilitySystemLibrary.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -34,6 +35,12 @@ UAuroraAttributeSet::UAuroraAttributeSet() {
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_ManaRegeneration, GetManaRegenerationAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MaxHealth, GetMaxHealthAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MaxMana, GetMaxManaAttribute);
+
+	/* Resistance Attributes */
+	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Arcane, GetArcaneResistanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Fire, GetFireResistanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Lightning, GetLightningResistanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Physical, GetPhysicalResistanceAttribute);
 
 }
 
@@ -63,6 +70,13 @@ void UAuroraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	// Vital attributes
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuroraAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuroraAttributeSet, Mana, COND_None, REPNOTIFY_Always);
+
+	// Resistance Attributes
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuroraAttributeSet, FireResistance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuroraAttributeSet, LightningResistance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuroraAttributeSet, ArcaneResistance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuroraAttributeSet, PhysicalResistance, COND_None, REPNOTIFY_Always);
 
 
 }
@@ -114,7 +128,9 @@ void UAuroraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
 			}
 
-			ShowFloatingText(Props, LocalIncomingDamage);
+			const bool bBlock = UAuroraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
+			const bool bCriticalHit = UAuroraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
+			ShowFloatingText(Props, LocalIncomingDamage, bBlock, bCriticalHit);
 		}
 	}
 	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute()) {
@@ -122,10 +138,10 @@ void UAuroraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 	}
 }
 
-void UAuroraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const {
+void UAuroraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage, bool bBlockedHit, bool bCriticalHit) const {
 	if (Props.SourceCharacter != Props.TargetCharacter) {
-		if (AAuroraPlayerController* PC = Cast<AAuroraPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0))) {
-			PC->ShowDamageNumber(Damage, Props.TargetCharacter);
+		if (AAuroraPlayerController* PC = Cast<AAuroraPlayerController>(Props.SourceCharacter->Controller)) {
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}
 	}
 }
@@ -230,3 +246,18 @@ void UAuroraAttributeSet::OnRep_ManaRegeneration(const FGameplayAttributeData& O
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuroraAttributeSet, ManaRegeneration, OldManaRegeneration);
 }
 
+void UAuroraAttributeSet::OnRep_FireResistance(const FGameplayAttributeData& OldFireResistance) const {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuroraAttributeSet, FireResistance, OldFireResistance);
+}
+
+void UAuroraAttributeSet::OnRep_LightningResistance(const FGameplayAttributeData& OldLightningResistance) const {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuroraAttributeSet, LightningResistance, OldLightningResistance);
+}
+
+void UAuroraAttributeSet::OnRep_ArcaneResistance(const FGameplayAttributeData& OldArcaneResistance) const {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuroraAttributeSet, ArcaneResistance, OldArcaneResistance);
+}
+
+void UAuroraAttributeSet::OnRep_PhysicalResistance(const FGameplayAttributeData& OldPhysicalResistance) const {
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuroraAttributeSet, PhysicalResistance, OldPhysicalResistance);
+}

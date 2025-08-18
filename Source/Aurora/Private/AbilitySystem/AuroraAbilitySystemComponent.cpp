@@ -16,8 +16,8 @@ void UAuroraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclass
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
 		if (const UAuroraGameplayAbility* AuroraAbility = Cast<UAuroraGameplayAbility>(AbilitySpec.Ability)) {
 
-			AbilitySpec.DynamicAbilityTags.AddTag(AuroraAbility->StartupInputTag);
-			AbilitySpec.DynamicAbilityTags.AddTag(FAuroraGameplayTags::Get().Abilities_Status_Equipped);
+			AbilitySpec.GetDynamicSpecSourceTags().AddTag(AuroraAbility->StartupInputTag);
+			AbilitySpec.GetDynamicSpecSourceTags().AddTag(FAuroraGameplayTags::Get().Abilities_Status_Equipped);
 			GiveAbility(AbilitySpec);
 		}
 	}
@@ -30,7 +30,7 @@ void UAuroraAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& I
 	if (!InputTag.IsValid()) return;
 	FScopedAbilityListLock ActiveScopeLoc(*this);
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)) {
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) {
 			AbilitySpecInputPressed(AbilitySpec);
 			if (AbilitySpec.IsActive()) {
 				InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, AbilitySpec.Handle, AbilitySpec.ActivationInfo.GetActivationPredictionKey());
@@ -43,7 +43,7 @@ void UAuroraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& Inpu
 	if (!InputTag.IsValid()) return;
 	FScopedAbilityListLock ActiveScopeLoc(*this);
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)) {
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)) {
 			AbilitySpecInputPressed(AbilitySpec);
 			if (!AbilitySpec.IsActive()) {
 				TryActivateAbility(AbilitySpec.Handle);
@@ -56,7 +56,7 @@ void UAuroraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& 
 	if (!InputTag.IsValid()) return;
 	FScopedAbilityListLock ActiveScopeLoc(*this);
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities()) {
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag) && AbilitySpec.IsActive()) {
+		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag) && AbilitySpec.IsActive()) {
 			AbilitySpecInputReleased(AbilitySpec);
 			InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, AbilitySpec.Handle, AbilitySpec.ActivationInfo.GetActivationPredictionKey());
 		}

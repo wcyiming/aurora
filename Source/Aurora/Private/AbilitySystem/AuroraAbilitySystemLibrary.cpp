@@ -7,6 +7,7 @@
 #include "UI/WidgetController/AuroraWidgetController.h"
 #include "Player/AuroraPlayerState.h"
 #include "Game/AuroraGameModeBase.h"
+#include "AuroraAbilityTypes.h"
 
 
 bool UAuroraAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams, AAuroraHUD*& OutAuraHUD) {
@@ -80,4 +81,30 @@ UCharacterClassInfo* UAuroraAbilitySystemLibrary::GetCharacterClassInfo(const UO
 	const AAuroraGameModeBase* AuroraGameMode = Cast<AAuroraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if (AuroraGameMode == nullptr) return nullptr;
 	return AuroraGameMode->CharacterClassInfo;
+}
+
+bool UAuroraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuroraGameplayEffectContext* AuraEffectContext = static_cast<const FAuroraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return AuraEffectContext->IsBlockedHit();
+	}
+	return false;
+}
+
+bool UAuroraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle) {
+	if (const FAuroraGameplayEffectContext* AuraEffectContext = static_cast<const FAuroraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		return AuraEffectContext->IsCriticalHit();
+	}
+	return false;
+}
+
+void UAuroraAbilitySystemLibrary::SetIsBlockedHit(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit) {
+	if (FAuroraGameplayEffectContext* AuroraEffectContext = static_cast<FAuroraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		AuroraEffectContext->SetIsBlockedHit(bInIsBlockedHit);
+	}
+}
+
+void UAuroraAbilitySystemLibrary::SetIsCriticalHit(UPARAM(ref)FGameplayEffectContextHandle& EffectContextHandle, bool bInIsCriticalHit) {
+	if (FAuroraGameplayEffectContext* AuroraEffectContext = static_cast<FAuroraGameplayEffectContext*>(EffectContextHandle.Get())) {
+		AuroraEffectContext->SetIsCriticalHit(bInIsCriticalHit);
+	}
 }

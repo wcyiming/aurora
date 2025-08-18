@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/AuroraGameplayAbility.h"
+#include "AbilitySystem/Abilities/AuroraDamageGameplayAbility.h"
 #include "AuroraProjectileSpell.generated.h"
 
 
@@ -15,7 +15,7 @@ struct FGameplayTag;
  * 
  */
 UCLASS()
-class AURORA_API UAuroraProjectileSpell : public UAuroraGameplayAbility
+class AURORA_API UAuroraProjectileSpell : public UAuroraDamageGameplayAbility
 {
 	GENERATED_BODY()
 
@@ -28,9 +28,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AAuroraProjectile> ProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 NumProjectiles = 5;

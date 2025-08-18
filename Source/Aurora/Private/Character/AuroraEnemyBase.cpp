@@ -9,6 +9,10 @@
 #include "UI/Widget/AuroraUserWidget.h"
 #include "AbilitySystem/AuroraAbilitySystemLibrary.h"
 
+#include "AI/AuroraAIController.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
+
 #include "AuroraGameplayTags.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -19,10 +23,29 @@ AAuroraEnemyBase::AAuroraEnemyBase() {
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+
+
 	AttributeSet = CreateDefaultSubobject<UAuroraAttributeSet>(TEXT("AttributeSet"));
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");
 	HealthBar->SetupAttachment(GetRootComponent());
+
+}
+
+void AAuroraEnemyBase::PossessedBy(AController* NewController) {
+	Super::PossessedBy(NewController);
+
+	if (!HasAuthority()) return;
+	AuroraAIController = Cast<AAuroraAIController>(NewController);
+	AuroraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+	AuroraAIController->RunBehaviorTree(BehaviorTree);
+	AuroraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
+	AuroraAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"), CharacterClass != ECharacterClass::Warrior);
 
 }
 
@@ -50,6 +73,7 @@ void AAuroraEnemyBase::Die() {
 void AAuroraEnemyBase::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) {
 	bHitReacting = NewCount > 0;
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
+	AuroraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
 }
 
 void AAuroraEnemyBase::BeginPlay() {
@@ -57,15 +81,18 @@ void AAuroraEnemyBase::BeginPlay() {
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	InitAbilityActorInfo();
-
-	UAuroraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+	if (HasAuthority()) {
+		UAuroraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+	}
 }
 
 void AAuroraEnemyBase::InitAbilityActorInfo() {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	Cast<UAuroraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
 
-	InitializeDefaultAttributes();
+	if (HasAuthority()) {
+		InitializeDefaultAttributes();
+	}
 
 	if (UAuroraUserWidget* AuroraUserWidget = Cast<UAuroraUserWidget>(HealthBar->GetUserWidgetObject())) {
 		AuroraUserWidget->SetWidgetController(this);
