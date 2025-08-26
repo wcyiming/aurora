@@ -4,6 +4,7 @@
 #include "Character/AuroraCharacterBase.h"
 #include "Components/CapsuleComponent.h"
 #include "Aurora/Aurora.h"
+#include "AuroraGameplayTags.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/AuroraAbilitySystemComponent.h"
@@ -44,6 +45,8 @@ void AAuroraCharacterBase::MulticastHandleDeath_Implementation() {
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
+
+	bDead = true;
 }
 
 UAnimMontage* AAuroraCharacterBase::GetHitReactMontage_Implementation() {
@@ -103,11 +106,30 @@ void AAuroraCharacterBase::BeginPlay()
 	
 }
 
-FVector AAuroraCharacterBase::GetCombatSocketLocation(const FGameplayTag& MontageTag) {
-	if (Weapon) {
+FVector AAuroraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) {
+	const FAuroraGameplayTags& GameplayTags = FAuroraGameplayTags::Get();
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_Weapon) && IsValid(Weapon)) {
 		return Weapon->GetSocketLocation(WeaponTipSocketName);
 	}
-	return FVector::ZeroVector;
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_LeftHand)) {
+		return GetMesh()->GetSocketLocation(LeftHandSocketName);
+	}
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_RightHand)) {
+		return GetMesh()->GetSocketLocation(RightHandSocketName);
+	}
+	return FVector();
+}
+
+bool AAuroraCharacterBase::IsDead_Implementation() const {
+	return bDead;
+}
+
+AActor* AAuroraCharacterBase::GetAvatar_Implementation() {
+	return this;
+}
+
+TArray<FTaggedMontage> AAuroraCharacterBase::GetAttackMontages_Implementation() {
+	return AttackMontages;
 }
 
 

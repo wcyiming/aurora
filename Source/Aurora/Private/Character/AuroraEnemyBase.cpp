@@ -67,13 +67,25 @@ int32 AAuroraEnemyBase::GetPlayerLevel() {
 
 void AAuroraEnemyBase::Die() {
 	SetLifeSpan(LifeSpan);
+	if (AuroraAIController) AuroraAIController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
 	Super::Die();
+}
+
+void AAuroraEnemyBase::SetCombatTarget_Implementation(AActor* InCombatTarget) {
+	CombatTarget = InCombatTarget;
+}
+
+AActor* AAuroraEnemyBase::GetCombatTarget_Implementation() const {
+	return CombatTarget;
 }
 
 void AAuroraEnemyBase::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) {
 	bHitReacting = NewCount > 0;
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
-	AuroraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
+	if (AuroraAIController && AuroraAIController->GetBlackboardComponent()) {
+		AuroraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
+	}
+
 }
 
 void AAuroraEnemyBase::BeginPlay() {
@@ -82,7 +94,7 @@ void AAuroraEnemyBase::BeginPlay() {
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	InitAbilityActorInfo();
 	if (HasAuthority()) {
-		UAuroraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+		UAuroraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent, CharacterClass);
 	}
 }
 

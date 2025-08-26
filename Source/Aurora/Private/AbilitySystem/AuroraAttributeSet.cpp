@@ -142,6 +142,10 @@ void UAuroraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float
 	if (Props.SourceCharacter != Props.TargetCharacter) {
 		if (AAuroraPlayerController* PC = Cast<AAuroraPlayerController>(Props.SourceCharacter->Controller)) {
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
+			return;
+		}
+		if (AAuroraPlayerController* PC = Cast<AAuroraPlayerController>(Props.TargetCharacter->Controller)) {
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}
 	}
 }

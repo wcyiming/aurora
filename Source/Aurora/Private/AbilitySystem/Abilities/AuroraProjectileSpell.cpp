@@ -21,7 +21,9 @@ void UAuroraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLoca
 	if (!Combat) {
 		return;
 	}
-	const FVector SocketLocation = Combat->GetCombatSocketLocation(SocketTag);
+	const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(
+		GetAvatarActorFromActorInfo(),
+		FAuroraGameplayTags::Get().CombatSocket_Weapon);
 
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
 	if (bOverridePitch) {
